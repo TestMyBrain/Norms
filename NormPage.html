@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+
+<head>
+	<title>TestMyBrain Norms</title>
+</head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+
+<script>
+
+$(document).ready(function() {
+	$.get(dropbox_link, function(data){
+        norm_data = data;
+        
+        //determine number of rows in CSV file
+        nRow = -1;
+        var i = 0;
+		while(i >= 0) {
+     	  i = norm_data.indexOf('\n', i+1);
+     	  nRow++;
+		}
+
+        tst = norm_data.indexOf('\n');
+        
+        if (tst == -1){
+			norm_data = norm_data.replace(/\r/g, ",");
+			norm_data = norm_data.replace("\"", "");
+		} else {
+			norm_data = norm_data.replace(/\n/g, ",");
+			norm_data = norm_data.replace("\"", "");
+		}
+		norm_data = norm_data.split(',');
+		
+		//get rid of weird slashes
+		for (i = 0; i < norm_data.length; i++){
+			norm_data[i] = norm_data[i].substr(1, norm_data[i].length - 2);
+		}
+		
+		//split norm data into columns (rounding because off by 1 for some reason)
+		nCol = Math.round(norm_data.length/nRow);
+		for (c = 0; c < nCol; c++){
+			norm_final[c] = [];
+		}
+		for (i = nCol; i < norm_data.length; i++){
+			norm_final[i%nCol].push(norm_data[i]);
+		}
+		
+	});
+});
+
+var dropbox_link = 'https://dl.dropboxusercontent.com/s/324v51d781prxll/adult_norms.csv?raw=1';
+var norm_data = [];
+var norm_final = [];
+var nRow = [];
+var gender_match = [];
+var age_match = [];
+var edu_match = [];
+var all_match = [];
+
+function getData(){
+	gender = frm.gender.value;
+	age = frm.age.value;
+	edu = frm.edu.value;
+	
+	//get gender matches
+	var i = 0;
+	gender_match = [];
+	while(i >= 0) {
+     	i = norm_final[1].indexOf(gender, i);
+     	if (i >= 0){
+     		gender_match.push(i);
+     		i++;
+     	}
+	}
+	
+	//get age matches
+	var i = 0;
+	age_match = [];
+	while(i >= 0) {
+     	i = norm_final[2].indexOf(age, i);
+     	if (i >= 0){
+     		age_match.push(i);
+     		i++;
+     	}
+	}
+	
+	//get edu matches
+	var i = 0;
+	edu_match = [];
+	while(i >= 0) {
+     	i = norm_final[3].indexOf(edu, i);
+     	if (i >= 0){
+     		edu_match.push(i);
+     		i++;
+     	}
+	}
+	
+	all_match = edu_match.filter(value => -1 !== gender_match.indexOf(value));
+	all_match = all_match.filter(value => -1 !== age_match.indexOf(value));
+	
+	MakeTable();
+}
+
+function MakeTable(){
+	//create table
+	console.log(all_match.length);
+	$('#main_table').append( '<table>');
+		$('#main_table').append( '<tr>');
+		for (var i = 1; i<nCol; i++){
+			$('#main_table').append('<th>' + norm_data[i] +'</th>');
+		} 
+		$('#main_table').append( '</tr>');
+		
+		for (var r = 0; r < all_match.length; r++){
+			$('#main_table').append( '<tr>')
+				for (var c = 1; c < nCol; c++){
+					$('#main_table').append( '<td>' + norm_final[c][all_match[r]] + '</td>')
+				}
+			$('#main_table').append( '<tr>')
+		}
+		$('#main_table').append(  '</table>' );
+}
+
+</script>
+
+<style>
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+td {
+text-align:center;
+font-size: 12px;
+padding: 4px;
+border: .5px solid #000;
+ white-space: nowrap;
+  overflow: hidden;
+}
+
+th {
+text-align:center;
+font-size: 12px;
+padding: 4px;
+border: .5px solid #000;
+ white-space: nowrap;
+  overflow: hidden;
+}
+</style>
+
+<body>
+
+<div id = "instructions">Please select participant characteristics from the dropdown menu.</div>
+<br>
+<div id = "dropdown">
+<div id = "form_div">
+<form id="frm" onsubmit="getData()">
+  <label for="gender">Gender:</label>
+  <select id="gender" name="gender">
+    <option value="F">Female</option>
+    <option value="M">Male</option>
+  </select>
+  <br>
+  <label for="age">Age:</label>
+  <select id="age" name="age">
+    <option value="21-30">20-29</option>
+    <option value="31-40">30-39</option>
+    <option value="41-50">40-49</option>
+    <option value="51-60">50-59</option>
+    <option value="61-70">60-69</option>
+    <option value="71-80">70-79</option>
+    <option value="81-90">80-89</option>
+    <option value="91+">90+</option>
+  </select>
+  <br>
+  <label for="edu">Years of Education:</label>
+  <select id="edu" name="edu">
+    <option value="7-11">11 or less</option>
+    <option value="12">12</option>
+    <option value="13-15">13-15</option>
+    <option value="16">16</option>
+    <option value="17+">17+</option>
+  </select>
+  <br>
+</form></div>
+<br>
+<div id="button"><button id ="main_button" onclick="getData()">Get Norm Data</button></div>
+</div>
+
+<br>
+<div id="main_table"></div>
+</body>
+</html>
