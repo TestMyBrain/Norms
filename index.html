@@ -106,6 +106,7 @@ function getData(){
 function MakeTable(){
 	//create table
 	console.log(all_match.length);
+	$("#main_table").html("");
 	$('#main_table').append( '<table>');
 		$('#main_table').append( '<tr>');
 		for (var i = 1; i<nCol; i++){
@@ -165,14 +166,14 @@ border: .5px solid #000;
   <br>
   <label for="age">Age:</label>
   <select id="age" name="age">
-    <option value="21-30">20-29</option>
-    <option value="31-40">30-39</option>
-    <option value="41-50">40-49</option>
-    <option value="51-60">50-59</option>
-    <option value="61-70">60-69</option>
-    <option value="71-80">70-79</option>
-    <option value="81-90">80-89</option>
-    <option value="91+">90+</option>
+    <option value="21-30">21-30</option>
+    <option value="31-40">31-40</option>
+    <option value="41-50">41-50</option>
+    <option value="51-60">51-60</option>
+    <option value="61-70">61-70</option>
+    <option value="71-80">71-80</option>
+    <option value="81-90">81-90</option>
+    <option value="91+">91+</option>
   </select>
   <br>
   <label for="edu">Years of Education:</label>
