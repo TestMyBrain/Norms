@@ -157,7 +157,11 @@ function makeTable(){
 		for (var r = 0; r < all_match.length; r++){
 			$('#main_table').append( '<tr>')
 				for (var c = 1; c < nCol; c++){
-					$('#main_table').append( '<td>' + norm_final[c][all_match[r]] + '</td>')
+					if (r%2 == 0){
+						$('#main_table').append( '<td bgcolor="#DEDEDE">' + norm_final[c][all_match[r]] + '</td>')
+					} else {
+						$('#main_table').append( '<td bgcolor="#FFFFFF">' + norm_final[c][all_match[r]] + '</td>')
+					}
 				}
 			$('#main_table').append( '<tr>')
 		}
