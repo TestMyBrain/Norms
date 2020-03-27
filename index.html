@@ -22,14 +22,12 @@ $(document).ready(function() {
      	  nRow++;
 		}
 
+
         tst = norm_data.indexOf('\n');
-        
         if (tst == -1){
 			norm_data = norm_data.replace(/\r/g, ",");
-			norm_data = norm_data.replace("\"", "");
 		} else {
 			norm_data = norm_data.replace(/\n/g, ",");
-			norm_data = norm_data.replace("\"", "");
 		}
 		norm_data = norm_data.split(',');
 		
@@ -37,6 +35,12 @@ $(document).ready(function() {
 		for (i = 0; i < norm_data.length; i++){
 			norm_data[i] = norm_data[i].substr(1, norm_data[i].length - 2);
 		}
+		
+		//find gender, age, and education columns
+		gender_column = norm_data.indexOf('gender')
+		age_column = norm_data.indexOf('age')
+		edu_column = norm_data.indexOf('education')
+		
 		
 		//split norm data into columns (rounding because off by 1 for some reason)
 		nCol = Math.round(norm_data.length/nRow);
@@ -47,6 +51,29 @@ $(document).ready(function() {
 			norm_final[i%nCol].push(norm_data[i]);
 		}
 		
+		//get edu options (in order from csv)
+		edu_options = Array.from(new Set(norm_final[edu_column]))
+		for (i = 0; i < edu_options.length; i++){
+			if (edu_options[i].length == 0){
+				edu_options.splice(i,1);
+			}
+		}
+		
+		//get age options (in order from csv)
+		age_options = Array.from(new Set(norm_final[age_column]))
+		for (i = 0; i < age_options.length; i++){
+			if (age_options[i].length == 0){
+				age_options.splice(i,1);
+			}
+		}
+		
+		//add education and age options as menu items
+		for (i = 0; i < edu_options.length; i++){
+			$('#edu').append(new Option(edu_options[i],edu_options[i]));
+		}
+		for (i = 0; i < age_options.length; i++){
+			$('#age').append(new Option(age_options[i],age_options[i]));
+		}
 	});
 });
 
@@ -54,10 +81,10 @@ var dropbox_link = 'https://dl.dropboxusercontent.com/s/324v51d781prxll/adult_no
 var norm_data = [];
 var norm_final = [];
 var nRow = [];
-var gender_match = [];
-var age_match = [];
-var edu_match = [];
-var all_match = [];
+var nCol = [];
+var age_column = [];
+var edu_column = [];
+var gender_column = [];
 
 function getData(){
 	gender = frm.gender.value;
@@ -68,7 +95,7 @@ function getData(){
 	var i = 0;
 	gender_match = [];
 	while(i >= 0) {
-     	i = norm_final[1].indexOf(gender, i);
+     	i = norm_final[gender_column].indexOf(gender, i);
      	if (i >= 0){
      		gender_match.push(i);
      		i++;
@@ -79,7 +106,7 @@ function getData(){
 	var i = 0;
 	age_match = [];
 	while(i >= 0) {
-     	i = norm_final[2].indexOf(age, i);
+     	i = norm_final[age_column].indexOf(age, i);
      	if (i >= 0){
      		age_match.push(i);
      		i++;
@@ -90,7 +117,7 @@ function getData(){
 	var i = 0;
 	edu_match = [];
 	while(i >= 0) {
-     	i = norm_final[3].indexOf(edu, i);
+     	i = norm_final[edu_column].indexOf(edu, i);
      	if (i >= 0){
      		edu_match.push(i);
      		i++;
@@ -105,7 +132,6 @@ function getData(){
 
 function MakeTable(){
 	//create table
-	console.log(all_match.length);
 	$("#main_table").html("");
 	$('#main_table').append( '<table>');
 		$('#main_table').append( '<tr>');
@@ -122,6 +148,10 @@ function MakeTable(){
 			$('#main_table').append( '<tr>')
 		}
 		$('#main_table').append(  '</table>' );
+}
+
+function clearTable(){
+	$("#main_table").html("");
 }
 
 </script>
@@ -159,30 +189,17 @@ border: .5px solid #000;
 <div id = "form_div">
 <form id="frm" onsubmit="getData()">
   <label for="gender">Gender:</label>
-  <select id="gender" name="gender">
+  <select id="gender" name="gender" onchange="clearTable()">
     <option value="F">Female</option>
     <option value="M">Male</option>
   </select>
   <br>
   <label for="age">Age:</label>
-  <select id="age" name="age">
-    <option value="21-30">21-30</option>
-    <option value="31-40">31-40</option>
-    <option value="41-50">41-50</option>
-    <option value="51-60">51-60</option>
-    <option value="61-70">61-70</option>
-    <option value="71-80">71-80</option>
-    <option value="81-90">81-90</option>
-    <option value="91+">91+</option>
+  <select id="age" name="age" onchange="clearTable()">
   </select>
   <br>
   <label for="edu">Years of Education:</label>
-  <select id="edu" name="edu">
-    <option value="7-11">11 or less</option>
-    <option value="12">12</option>
-    <option value="13-15">13-15</option>
-    <option value="16">16</option>
-    <option value="17+">17+</option>
+  <select id="edu" name="edu" onchange="clearTable()">
   </select>
   <br>
 </form></div>
