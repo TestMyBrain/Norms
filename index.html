@@ -51,6 +51,14 @@ $(document).ready(function() {
 			norm_final[i%nCol].push(norm_data[i]);
 		}
 		
+		//get gender options (in order from csv)
+		gender_options = Array.from(new Set(norm_final[gender_column]))
+		for (i = 0; i < gender_options.length; i++){
+			if (gender_options[i].length == 0){
+				gender_options.splice(i,1);
+			}
+		}
+		
 		//get edu options (in order from csv)
 		edu_options = Array.from(new Set(norm_final[edu_column]))
 		for (i = 0; i < edu_options.length; i++){
@@ -67,7 +75,10 @@ $(document).ready(function() {
 			}
 		}
 		
-		//add education and age options as menu items
+		//add gender, education, and age options as menu items
+		for (i = 0; i < gender_options.length; i++){
+			$('#gender').append(new Option(gender_options[i],gender_options[i]));
+		}
 		for (i = 0; i < edu_options.length; i++){
 			$('#edu').append(new Option(edu_options[i],edu_options[i]));
 		}
@@ -82,6 +93,7 @@ var norm_data = [];
 var norm_final = [];
 var nRow = [];
 var nCol = [];
+var gender_options = [];
 var age_column = [];
 var edu_column = [];
 var gender_column = [];
@@ -189,18 +201,13 @@ border: .5px solid #000;
 <div id = "form_div">
 <form id="frm" onsubmit="getData()">
   <label for="gender">Gender:</label>
-  <select id="gender" name="gender" onchange="clearTable()">
-    <option value="F">Female</option>
-    <option value="M">Male</option>
-  </select>
+  <select id="gender" name="gender" onchange="clearTable()"></select>
   <br>
   <label for="age">Age:</label>
-  <select id="age" name="age" onchange="clearTable()">
-  </select>
+  <select id="age" name="age" onchange="clearTable()"></select>
   <br>
   <label for="edu">Years of Education:</label>
-  <select id="edu" name="edu" onchange="clearTable()">
-  </select>
+  <select id="edu" name="edu" onchange="clearTable()"></select>
   <br>
 </form></div>
 <br>
