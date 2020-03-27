@@ -10,6 +10,16 @@
 
 <script>
 
+var dropbox_link = 'https://dl.dropboxusercontent.com/s/324v51d781prxll/adult_norms.csv?raw=1';
+var norm_data = [];
+var norm_final = [];
+var nRow = [];
+var nCol = [];
+var gender_options = [];
+var age_column = [];
+var edu_column = [];
+var gender_column = [];
+
 $(document).ready(function() {
 	$.get(dropbox_link, function(data){
         norm_data = data;
@@ -85,18 +95,10 @@ $(document).ready(function() {
 		for (i = 0; i < age_options.length; i++){
 			$('#age').append(new Option(age_options[i],age_options[i]));
 		}
+		
+		getData();
 	});
 });
-
-var dropbox_link = 'https://dl.dropboxusercontent.com/s/324v51d781prxll/adult_norms.csv?raw=1';
-var norm_data = [];
-var norm_final = [];
-var nRow = [];
-var nCol = [];
-var gender_options = [];
-var age_column = [];
-var edu_column = [];
-var gender_column = [];
 
 function getData(){
 	gender = frm.gender.value;
@@ -139,10 +141,10 @@ function getData(){
 	all_match = edu_match.filter(value => -1 !== gender_match.indexOf(value));
 	all_match = all_match.filter(value => -1 !== age_match.indexOf(value));
 	
-	MakeTable();
+	makeTable();
 }
 
-function MakeTable(){
+function makeTable(){
 	//create table
 	$("#main_table").html("");
 	$('#main_table').append( '<table>');
@@ -160,10 +162,6 @@ function MakeTable(){
 			$('#main_table').append( '<tr>')
 		}
 		$('#main_table').append(  '</table>' );
-}
-
-function clearTable(){
-	$("#main_table").html("");
 }
 
 </script>
@@ -201,17 +199,15 @@ border: .5px solid #000;
 <div id = "form_div">
 <form id="frm" onsubmit="getData()">
   <label for="gender">Gender:</label>
-  <select id="gender" name="gender" onchange="clearTable()"></select>
+  <select id="gender" name="gender" onchange="getData()"></select>
   <br>
   <label for="age">Age:</label>
-  <select id="age" name="age" onchange="clearTable()"></select>
+  <select id="age" name="age" onchange="getData()"></select>
   <br>
   <label for="edu">Years of Education:</label>
-  <select id="edu" name="edu" onchange="clearTable()"></select>
+  <select id="edu" name="edu" onchange="getData()"></select>
   <br>
 </form></div>
-<br>
-<div id="button"><button id ="main_button" onclick="getData()">Get Norm Data</button></div>
 </div>
 
 <br>
