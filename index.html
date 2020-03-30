@@ -19,6 +19,7 @@ var nCol = [];
 var age_column = [];
 var edu_column = [];
 var gender_column = [];
+var adolescent = [];
 
 $(document).ready(function() {
 	$.get(dropbox_link, function(data){
@@ -173,19 +174,23 @@ function makeTable(){
 	//create table
 	$("#main_table").html("");
 	$('#main_table').append( '<table>');
-		$('#main_table').append( '<tr>');
+	$('#main_table').append( '<tr>');
 		for (var i = 1; i<nCol; i++){
-			$('#main_table').append('<th>' + norm_data[i] +'</th>');
+			if (!adolescent || i != edu_column){
+				$('#main_table').append('<th>' + norm_data[i] +'</th>');
+			}
 		} 
 		$('#main_table').append( '</tr>');
 		
 		for (var r = 0; r < all_match.length; r++){
 			$('#main_table').append( '<tr>')
 				for (var c = 1; c < nCol; c++){
-					if (r%2 == 0){
-						$('#main_table').append( '<td bgcolor="#CFCFCF">' + norm_final[c][all_match[r]] + '</td>')
-					} else {
-						$('#main_table').append( '<td bgcolor="#FFFFFF">' + norm_final[c][all_match[r]] + '</td>')
+					if (!adolescent || c != edu_column){
+						if (r%2 == 0){
+							$('#main_table').append( '<td bgcolor="#CFCFCF">' + norm_final[c][all_match[r]] + '</td>')
+						} else {
+							$('#main_table').append( '<td bgcolor="#FFFFFF">' + norm_final[c][all_match[r]] + '</td>')
+						}
 					}
 				}
 			$('#main_table').append( '<tr>')
