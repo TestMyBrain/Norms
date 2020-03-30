@@ -11,7 +11,7 @@
 
 <script>
 
-var dropbox_link = 'https://dl.dropboxusercontent.com/s/324v51d781prxll/adult_norms.csv?raw=1';
+var dropbox_link = 'https://dl.dropboxusercontent.com/s/za09n968ed19odg/combined_norms.csv?raw=1';
 var norm_data = [];
 var norm_final = [];
 var nRow = [];
@@ -99,6 +99,9 @@ $(document).ready(function() {
 		for (i = 0; i < age_options.length; i++){
 			$('#age').append(new Option(age_options[i],age_options[i]));
 		}
+		
+		//set default menu option to be 21-30...hard coded so need to change this line if major change
+		$("#age").val('21-30');
 		
 		getData();
 	});
