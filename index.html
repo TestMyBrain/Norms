@@ -160,7 +160,7 @@ function getData(){
 	} else {
 		adolescent = false;
 		$('#edu').show();
-		$("label[for='edu']").text("Years of Education:");
+		$("label[for='edu']").html("<b>Years of Education:</b>");
 	}
 	
 	
@@ -292,16 +292,16 @@ font-size: 14px
 <div id = "dropdown">
 <div id = "form_div">
 <form id="frm" onsubmit="getData()">
-  <label for="gender">Gender:</label>
+  <label for="gender"><b>Gender:</b></label>
   <select id="gender" name="gender" onchange="getData()"></select>
   <br><br>
-  <label for="age">Age:</label>
+  <label for="age"><b>Age:</b></label>
   <select id="age" name="age" onchange="getData()"></select>
   <br><br>
-  <label for="edu">Years of Education:</label>
+  <label for="edu"><b>Years of Education:</b></label>
   <select id="edu" name="edu" onchange="getData()"></select>
   <br><br>
-  <label for="device">Testing Device:</label>
+  <label for="device"><b>Testing Device:</b></label>
   <select id="device" name="device" onchange="getData()"></select>
   <br>
 </form></div>
