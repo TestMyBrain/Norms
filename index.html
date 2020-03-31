@@ -11,7 +11,8 @@
 
 <script>
 
-var dropbox_link = 'https://dl.dropboxusercontent.com/s/za09n968ed19odg/combined_norms.csv?raw=1';
+
+var dropbox_link = 'https://dl.dropboxusercontent.com/s/828kreq3ktgz7e8/combined_norms_wDevice.csv?raw=1';
 var norm_data = [];
 var norm_final = [];
 var nRow = [];
@@ -19,7 +20,9 @@ var nCol = [];
 var age_column = [];
 var edu_column = [];
 var gender_column = [];
+var device_column = [];
 var adolescent = [];
+var part_string = [];
 
 $(document).ready(function() {
 	$.get(dropbox_link, function(data){
@@ -55,6 +58,7 @@ $(document).ready(function() {
 		gender_column = norm_data.indexOf('gender')
 		age_column = norm_data.indexOf('age')
 		edu_column = norm_data.indexOf('education')
+		device_column = norm_data.indexOf('device')
 		
 		
 		//split norm data into columns (rounding because off by 1 for some reason)
@@ -89,8 +93,15 @@ $(document).ready(function() {
 				age_options.splice(i,1);
 			}
 		}
+		//get device options (in order from csv)
+		device_options = Array.from(new Set(norm_final[device_column]))
+		for (i = 0; i < device_options.length; i++){
+			if (device_options[i].length == 0){
+				device_options.splice(i,1);
+			}
+		}
 		
-		//add gender, education, and age options as menu items
+		//add gender, education, age, and device options as menu items
 		for (i = 0; i < gender_options.length; i++){
 			$('#gender').append(new Option(gender_options[i],gender_options[i]));
 		}
@@ -100,9 +111,34 @@ $(document).ready(function() {
 		for (i = 0; i < age_options.length; i++){
 			$('#age').append(new Option(age_options[i],age_options[i]));
 		}
+		for (i = 0; i < device_options.length; i++){
+			$('#device').append(new Option(device_options[i],device_options[i]));
+		}
 		
 		//set default menu option to be 21-30...hard coded so need to change this line if major change
 		$("#age").val('21-30');
+		
+		//participant specific string
+		var pageURL = window.location.href;
+		if (pageURL.indexOf('?') > -1){
+			part_string = pageURL.substring(pageURL.indexOf("?")+1, pageURL.length);
+			str = 'Participant-specific scores:<br>';
+			var i = 0;
+			var pos = 0;
+			while(i >= 0) {
+     	  		i = part_string.indexOf('=', i+1);
+     	  		a = part_string.indexOf('&', i+1);
+     	  		if (i >= 0){
+     	  			if (a==-1){
+     	  				a = part_string.length;
+     	  			}
+     	  			str = str + part_string.substring(pos, i) + ' = ' + part_string.substring(i+1,a) + '<br>'
+     	  			pos = a + 1;
+     	  		}
+			}
+			$("#part_scores").html(str + '<br>');
+			
+		}
 		
 		getData();
 	});
@@ -112,6 +148,7 @@ function getData(){
 	gender = frm.gender.value;
 	age = frm.age.value;
 	edu = frm.edu.value;
+	device = frm.device.value;
 	
 	//check to see if adolescent
 	if (age.length <= 2){
@@ -160,8 +197,22 @@ function getData(){
      	}
 	}
 	
+	//get device matches
+	var i = 0;
+	device_match = [];
+	while(i >= 0) {
+     	i = norm_final[device_column].indexOf(device, i);
+     	if (i >= 0){
+     		device_match.push(i);
+     		i++;
+     	}
+	}
+	
 	//filter by age and gender
 	all_match = age_match.filter(value => -1 !== gender_match.indexOf(value));
+	
+	//filter by device
+	all_match = all_match.filter(value => -1 !== device_match.indexOf(value));
 	
 	//apply education filter if over age 12-20
 	if (!adolescent){
@@ -249,19 +300,19 @@ font-size: 14px
   <br><br>
   <label for="edu">Years of Education:</label>
   <select id="edu" name="edu" onchange="getData()"></select>
+  <br><br>
+  <label for="device">Testing Device:</label>
+  <select id="device" name="device" onchange="getData()"></select>
   <br>
 </form></div>
-
 <br>
+<div id = "part_scores"></div>
 <div id = "description">
 Normative data are provided in z-score units, presenting the number of standard deviations from the mean represented by each raw score.<br>
 Where possible, all norms are coded such that higher (or more positive) z scores represent better performance whereas lower (or more negative) z scores represent poorer performance.<br>
 See below table for description of test-specific column headings.</div>
-
 </div>
-
 <br>
-
 <div id ="print"><input type="button" value="Print this page" onClick="window.print()"></div>
 
 <br>
