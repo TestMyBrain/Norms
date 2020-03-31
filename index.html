@@ -10,9 +10,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 
 <script>
-
-
-var dropbox_link = 'https://dl.dropboxusercontent.com/s/828kreq3ktgz7e8/combined_norms_wDevice.csv?raw=1';
+var dropbox_link = 'https://dl.dropboxusercontent.com/s/rci2ggxp59ulehd/all_norms_temp.csv?raw=1';
 var norm_data = [];
 var norm_final = [];
 var nRow = [];
@@ -27,6 +25,7 @@ var part_string = [];
 $(document).ready(function() {
 	$.get(dropbox_link, function(data){
         norm_data = data;
+
         
         //determine number of rows in CSV file
         nRow = -1;
@@ -52,7 +51,6 @@ $(document).ready(function() {
 				norm_data[i] = norm_data[i].substr(1, norm_data[i].length - 2);
 			}
 		}
-		
 		
 		//find gender, age, and education columns
 		gender_column = norm_data.indexOf('gender')
