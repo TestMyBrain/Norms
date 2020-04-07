@@ -221,14 +221,23 @@ function getData(){
 	}
 	
 	//filter by age and gender
-	all_match = age_match.filter(value => -1 !== gender_match.indexOf(value));
+	//all_match = age_match.filter(value => -1 !== gender_match.indexOf(value));
+	all_match = age_match.filter(function(n) {
+    	return gender_match.indexOf(n) !== -1;
+	});
 	
 	//filter by device
-	all_match = all_match.filter(value => -1 !== device_match.indexOf(value));
+	//all_match = all_match.filter(value => -1 !== device_match.indexOf(value));
+	all_match = all_match.filter(function(n) {
+    	return device_match.indexOf(n) !== -1;
+	});
 	
 	//apply education filter if over age 12-20
 	if (!adolescent){
-		all_match = all_match.filter(value => -1 !== edu_match.indexOf(value));
+		//all_match = all_match.filter(value => -1 !== edu_match.indexOf(value));
+		all_match = all_match.filter(function(n) {
+    		return edu_match.indexOf(n) !== -1;
+		});
 	}
 	makeTable();
 }
