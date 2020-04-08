@@ -10,9 +10,12 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 
 <script>
-var dropbox_link = 'https://raw.githubusercontent.com/TestMyBrain/Norms/master/combined_norms_forNormSite.csv';
+var norm_table_csv_link = 'https://raw.githubusercontent.com/TestMyBrain/Norms/master/combined_norms_forNormSite.csv';
+var regweights_link = 'https://raw.githubusercontent.com/TestMyBrain/Norms/master/regWeights_forNormSite.csv';
 var norm_data = [];
 var norm_final = [];
+var reg_weights = [];
+var reg_weights_final = [];
 var nRow = [];
 var nCol = [];
 var age_column = [];
@@ -25,6 +28,14 @@ var part_string = [];
 var cols2show = [];
 var cols2showNames = [];
 var show_all = false;
+var ss = {	"test": [],
+			"raw": [],
+			"z": [],
+			};
+var rw = [];
+var rw_match = [];
+var rw_row = [];
+var znote_text = 'Z-scores outside of the -4 to 4 range are extreme outliers and should be interpreted with caution. This could, for example, indicate a technical or user error during test administration.'
 
 // Production steps of ECMA-262, Edition 6, 22.1.2.1 (to allow Array.from to work on IE)
 if (!Array.from) {
@@ -105,14 +116,62 @@ if (!Array.from) {
   }());
 }
 $(document).ready(function() {
-	getDropboxData()
+	getRegWeights()
 });
 
-function getDropboxData(){
-	$.get(dropbox_link, function(data){
+function getRegWeights(){
+	$.get(regweights_link, function(data){
+        reg_weights = data;
+        
+        //determine number of rows in CSV file
+        var nRow_rw = -1;
+        var i = 0;
+		while(i >= 0) {
+     	  i = reg_weights.indexOf('\n', i+1);
+     	  nRow_rw++;
+		}
+		
+		tst = reg_weights.indexOf('\n');
+        if (tst == -1){
+			reg_weights = reg_weights.replace(/\r/g, ",");
+		} else {
+			reg_weights = reg_weights.replace(/\n/g, ",");
+		}
+		reg_weights = reg_weights.split(',');
+		
+		
+		//get rid of slashes that R puts into CSV (if necessary)
+		if (reg_weights[0].length > 0){
+			for (i = 0; i < reg_weights.length; i++){
+				reg_weights[i] = reg_weights[i].substr(1, reg_weights[i].length - 2);
+			}
+		}
+		
+		//split data into columns (rounding because off by 1 for some reason)
+		var nCol_rw = Math.round(reg_weights.length/nRow_rw);
+		
+		for (c = 0; c < nCol_rw; c++){
+			reg_weights_final[c] = [];
+		}
+		for (i = nCol_rw; i < reg_weights.length; i++){
+			reg_weights_final[i%nCol_rw].push(reg_weights[i]);
+		}
+		
+		for (i = 1; i < nCol_rw; i++){
+			rw[reg_weights[i]] = (reg_weights_final[i]);
+		}
+		
+		getNormData();
+	}).fail(function(d) {
+        console.log("error_rw");
+        getRegWeights();
+    });
+}
+
+function getNormData(){
+	$.get(norm_table_csv_link, function(data){
         norm_data = data;
 
-        
         //determine number of rows in CSV file
         nRow = -1;
         var i = 0;
@@ -218,19 +277,20 @@ function getDropboxData(){
      	  				a = part_string.length;
      	  			}
      	  			var test_name = part_string.substring(pos, i);
+     	  			ss.test.push(test_name)
      	  			cols2showNames.push(test_name)
-     	  			str = str + test_name + ' = ' + part_string.substring(i+1,a) + '<br>'
+     	  			ss.raw.push(part_string.substring(i+1,a));
+     	  			ss.z.push(0);
      	  			pos = a + 1;
      	  		}
 			}
-			$("#part_scores").html(str + '<br>');
 		} else {
 			$("#show_all").hide();
 		}
 		getData();
 	}).fail(function(d) {
         console.log("error");
-        getDropboxData();
+        getNormData();
     });
 }
 
@@ -317,11 +377,134 @@ function getData(){
     		return edu_match.indexOf(n) !== -1;
 		});
 	}
+	
+	//calculate z-scores
+	for (t = 0; t < ss.test.length; t++){
+		score = Number(ss.raw[t]);
+		//find which row we need
+		
+		//get age matches
+		if (adolescent){
+			var ag = 'adolescent';
+		} else {
+			var ag = 'adult';
+		}
+		var i = 0;
+		var ag_match = [];
+		while(i >= 0) {
+     		i = rw.group.indexOf(ag, i);
+     		if (i >= 0){
+     			ag_match.push(i);
+     			i++;
+     		}
+		}
+		//get test name matches
+		var i = 0;
+		var tn_match = [];
+		while(i >= 0) {
+     		i = rw.test.indexOf(ss.test[t], i);
+     		if (i >= 0){
+     			tn_match.push(i);
+     			i++;
+     		}
+		}
+		
+		rw_match = ag_match.filter(function(n) {
+    		return tn_match.indexOf(n) !== -1;
+		});
+		
+		if (rw_match.length > 0){
+			//two options at this point
+			if (device == "unknown"){
+				//get regression weight row
+				if (rw.iPad[rw_match[0]].length == 0){
+					rw_row = rw_match[0];
+				} else {
+					rw_row = rw_match[1];
+				}
+				//assign edu_score depending on age group (adult/adolescent)
+				if (adolescent){
+					edu_score = 0;
+				} else {
+					edu_score = (edu_options.indexOf(edu)+1)* Number(rw.education[rw_row]);
+				}
+				dev_score = 0;
+			} else {
+				//get regression weight row
+				if (rw.iPad[rw_match[0]].length == 0){
+					rw_row = rw_match[1];
+				} else {
+					rw_row = rw_match[0];
+				}
+				//assign edu_score depending on age group (adult/adolescent)
+				if (adolescent){
+					edu_score = 0;
+				} else {
+					edu_score = (edu_options.indexOf(edu)+1)* Number(rw.education[rw_row]);
+				}
+				//assign device score depending on device selected
+				if (reg_weights.indexOf(device) == -1){
+					dev_score = 0;
+				} else {
+					dev_score = Number(rw[device][rw_row]);
+				}
+			}
+			//get gender score
+			if (gender == 'M'){
+				gender_score = Number(rw.gender_male[rw_row])
+			} else {
+				gender_score = 0;
+			}
+			//get age score
+			if (adolescent){
+				age_val = Number(age);
+			} else {
+				age_val = Number(age.substring(0,1))
+			}
+			//is higher score better or worse?
+			if (rw.flip[rw_row] == "TRUE"){
+				f = -1;
+			} else {
+				f = 1;
+			}
+		
+			predicted_score = Number(rw.yint[rw_row]) + gender_score + edu_score + dev_score + age_val*Number(rw.age1[rw_row]) + age_val*age_val*Number(rw.age2[rw_row]);
+			if (score < Number(rw.min[rw_row]) && rw.min[rw_row].length > 0){
+				score = Number(rw.min[rw_row]);
+			} else if (score > Number(rw.max[rw_row]) && rw.max[rw_row].length > 0){
+				score = Number(rw.max[rw_row]);
+			}
+		
+			z = f*(score - predicted_score) / Number(rw.reg_sd[rw_row])
+			ss.z[t] = Math.round(100*z)/100;
+		} else {
+			ss.z[t] = 'NA'
+		}
+	}
+	
 	makeTable();
 }
 
 function makeTable(){
+	$("#znote").html(znote_text);
+	if (part_string.length > 0){
+		//update scores
+		str = [];
+		$("#znote").css('color', 'black');
+		for (i = 0; i < ss.test.length; i++){
+			if (ss.z[i] < 4 && ss.z[i] > -4){
+				str = str + ss.test[i] + ' = ' + ss.raw[i] + '; Z = ' + ss.z[i] + '<br>'
+			} else {
+				str = str + ss.test[i] + ' = ' + ss.raw[i] + ';<font color="red"> Z = ' + ss.z[i] + '*</font><br>'
+				$("#znote").html('*'+znote_text);
+				$("#znote").css('color', 'red');
+			}
+		}
+		$("#part_scores").html('<b>Participant-specific scores (z-score is specific to characteristics specified by dropdown menus):</b><br>' + str + '<br>');
+	}
+
 	//create table
+	$("#instructions").html('Please select participant characteristics from the dropdown menus:')
 	
 	//pick what columns to show, if test-specific data in url
 	if (part_string.length > 0 && !show_all){
@@ -389,12 +572,13 @@ function showHideNorms(){
 }
 
 function unique(a) {
-    var temp = {};
-    for (var i = 0; i < a.length; i++)
-        temp[a[i]] = true;
     var r = [];
-    for (var k in temp)
-        r.push(k);
+    for (var i = 0; i < a.length; i++){
+    	var k = a[i];
+        if (r.indexOf(k) == -1){
+        	r.push(k);
+        }
+    }
     return r;
 }
 </script>
@@ -431,11 +615,15 @@ font-size: 14px
 #description {
 font-size: 14px
 }
+
+#znote {
+font-size: 14px
+}
 </style>
 
 <body>
 
-<div id = "instructions">Please select participant characteristics from the dropdown menus:</div>
+<div id = "instructions">Loading norm data, please wait...</div>
 <br>
 <div id = "dropdown">
 <div id = "form_div">
@@ -458,6 +646,7 @@ font-size: 14px
 <div id = "description">
 Normative data are provided in z-score units, presenting the number of standard deviations from the mean represented by each raw score.<br>
 Where possible, all norms are coded such that higher (or more positive) z scores represent better performance whereas lower (or more negative) z scores represent poorer performance.<br>
+<div id = "znote"></div>
 See below table for description of test-specific column headings.</div>
 </div>
 <br>
